@@ -15,6 +15,8 @@ class Instagram:
         self._target = target
 
         self._driver = Core(executable_path=dev_config.CHROMEDRIVER).initialize_driver()
+        # self._driver = Docker().initialize_driver()
+        # self._driver = Proxy(executable_path=dev_config.CHROMEDRIVER, proxy=dev_config.PROXY).initialize_driver()
 
     def login(self) -> None:
         if not self._sage_get('https://instagram.com'):
@@ -31,7 +33,7 @@ class Instagram:
         """ Goes to the page or else throws an error. """
         try:
             self._driver.get(url)
-        except WebDriverException as e:
+        except WebDriverException:
             return False
 
         return True
