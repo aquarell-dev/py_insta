@@ -15,7 +15,7 @@ class Core:
         self.options.add_argument('--use-gl')
         self.options.add_argument('--disable-web-security')
         self.options.add_argument('--disable-gpu')
-        self.options.add_argument('--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.124 Safari/537.36')
+        self.options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36')
         self.options.add_experimental_option("excludeSwitches", ['enable-logging'])
         self.options.add_experimental_option("excludeSwitches", ['enable-automation'])
 

@@ -1,13 +1,16 @@
-from selenium.common.exceptions import WebDriverException
+from selenium.common.exceptions import WebDriverException, TimeoutException
 from selenium.common import exceptions
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+from libs import ie
+from libs.json_ import read_file
 from libs.core import Core, Docker, Proxy
-from config import dev_config
-import time
+from config import dev_config, user_config
+import time, os
+
 
 class Instagram:
     def __init__(self, login: str, password: str, target: str) -> None:
@@ -21,51 +24,52 @@ class Instagram:
 
         self._target = target
 
-        # self._driver = Core(executable_path=dev_config.CHROMEDRIVER).initialize_driver()
+        self._driver = Core(executable_path=dev_config.CHROMEDRIVER).initialize_driver()
         # self._driver = Docker().initialize_driver()
-        self._driver = Proxy(executable_path=dev_config.CHROMEDRIVER, proxy=dev_config.PROXY).initialize_driver()
+        # self._driver = Proxy(executable_path=dev_config.CHROMEDRIVER, proxy=dev_config.PROXY).initialize_driver()
 
         self._wait = WebDriverWait(self._driver, 10)
         self._ac = ActionChains(self._driver)
+
+        self._users = read_file(os.path.join(dev_config.FOLLOWERS_FOLDER, user_config.FOLLOWERS_FILE))
 
     def __repr__(self) -> str:
         return repr(f'Account. Login - {self._login}.')
 
     def login(self) -> None:
-        time.sleep(1000)
-        if not self._sage_get('https://instagram.com'):
+        if not self._safe_get('https://instagram.com'):
             self._driver.quit()
             raise ConnectionError('Couldn\'t connect to instagram.')
 
         locators = {
-            'login': (By.XPATH, ''),
-            'pass': (By.XPATH, ''),
-            'submit': (By.XPATH, ''),
-            'confirm_login': (By.XPATH, '')
+            'login': (By.XPATH, '//input[@name="username"]'),
+            'pass': (By.XPATH, '//input[@name="password"]'),
+            'submit': (By.XPATH, '//button[@type="submit"]/..'),
+            'cookies': (By.XPATH, '//div[@role="dialog"]')
         }
 
         try:
             self._wait.until(EC.presence_of_element_located(locators['login']))
             self._wait.until(EC.presence_of_element_located(locators['pass']))
             self._wait.until(EC.presence_of_element_located(locators['submit']))
-        except WebDriverException:
+        except TimeoutException:
             self._driver.quit()
-            raise RuntimeError('Couldn\'t load login button.')
+            raise ie.LoadingError('Couldn\'t load the page.')
 
-        self._driver.find_element(locators['login']).send_keys(self._login)
-        self._driver.find_element(locators['pass']).send_keys(self._password)
-        self._driver.find_element(locators['submit']).click()
+        if self._does_element_exist((By.XPATH, '//div[@role="dialog"]')):
+            self._driver.find_element(By.XPATH, '//button[@tabindex=0]').click()
+            time.sleep(5)
 
-        if self._does_element_exist(locators['confirm_login']):
+        # instagram protects itself for real incredibly so i added these random time sleeps
+        self._driver.find_element(*locators['login']).send_keys(self._login)
+        time.sleep(1.2)
+        self._driver.find_element(*locators['pass']).send_keys(self._password)
+        time.sleep(2)
+        self._driver.find_element(*locators['submit']).click()
+
+        if not self._does_element_exist((By.XPATH, '//div[@class="olLwo"]')):
             self._driver.quit()
-            raise RuntimeError('Authentication error.')
-
-    def like_posts(self) -> None:
-        """ Likes the three latest user's posts. """
-
-    def subscribe(self) -> None:
-        """ Subscribes to a user. """
-        pass
+            raise ie.AuthorizationError(f'Couldn\'t log in. {self._login}')
 
     def _does_element_exist(self, locator) -> bool:
         """ Returns True if element exists or else False. """
@@ -80,7 +84,7 @@ class Instagram:
 
         return True
 
-    def _sage_get(self, url: str) -> bool:
+    def _safe_get(self, url: str) -> bool:
         """ Goes to the page or else throws an error. """
         try:
             self._driver.get(url)
