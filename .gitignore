@@ -42,6 +42,7 @@ pip-delete-this-directory.txt
 
 logs/
 trash/
+chromedriver/
 
 # Unit test / coverage reports
 htmlcov/
