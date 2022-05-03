@@ -7,6 +7,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from libs.core import Core, Docker, Proxy
 from config import dev_config
+import time
 
 class Instagram:
     def __init__(self, login: str, password: str, target: str) -> None:
@@ -20,9 +21,9 @@ class Instagram:
 
         self._target = target
 
-        self._driver = Core(executable_path=dev_config.CHROMEDRIVER).initialize_driver()
+        # self._driver = Core(executable_path=dev_config.CHROMEDRIVER).initialize_driver()
         # self._driver = Docker().initialize_driver()
-        # self._driver = Proxy(executable_path=dev_config.CHROMEDRIVER, proxy=dev_config.PROXY).initialize_driver()
+        self._driver = Proxy(executable_path=dev_config.CHROMEDRIVER, proxy=dev_config.PROXY).initialize_driver()
 
         self._wait = WebDriverWait(self._driver, 10)
         self._ac = ActionChains(self._driver)
@@ -31,6 +32,7 @@ class Instagram:
         return repr(f'Account. Login - {self._login}.')
 
     def login(self) -> None:
+        time.sleep(1000)
         if not self._sage_get('https://instagram.com'):
             self._driver.quit()
             raise ConnectionError('Couldn\'t connect to instagram.')

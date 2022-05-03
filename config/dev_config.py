@@ -4,6 +4,6 @@ import os
 FOLLOWERS_FOLDER = os.path.join(os.getcwd(), 'followers')
 
 # files
-CHROMEDRIVER = None
+CHROMEDRIVER = os.path.join(os.getcwd(), 'chromedriver', 'chromedriver')
 
-PROXY = None
+PROXY = 'http://1AGVUY:9HybgEyHYSNe@92.63.111.110:49425'
