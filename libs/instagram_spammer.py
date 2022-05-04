@@ -29,15 +29,19 @@ class InstagramSpammer(Instagram):
                 print(f'[-] Not able to load the subscribe button. User: {url}.')
                 continue
 
+            print(f'[+] Followed to {url}.')
+
             try:
                 posts = self._like_posts()
             except ie.LoadingError:
                 print(f'[-] Not able to load the posts. User: {url}.')
                 continue
 
+            print(f'[+] Liked {url} posts.')
+
             self._direct_message()
 
-            print(f'User: {url}. Subscribed. Posts liked: {posts}. Messaged.')
+            print(f'[+] User: {url}. Subscribed. Posts liked: {posts}. Messaged.')
 
     def _subscribe(self) -> None:
         """ Subscribes to a user. """
@@ -46,16 +50,16 @@ class InstagramSpammer(Instagram):
         }
 
         if self._is_acc_private():
-            raise ie.AccountPrivate('Account is private.')
+            raise ie.AccountPrivate()
 
         try:
             self._wait.until(EC.presence_of_element_located(locators['follow']))
         except TimeoutException:
-            raise ie.LoadingError('Couldn\'t load elements on the page.')
+            raise ie.LoadingError()
 
         random_sleep()
 
-        self._driver.find_element(*locators['follow'])
+        self._driver.find_element(*locators['follow']).click()
 
         random_sleep()
 
@@ -70,7 +74,7 @@ class InstagramSpammer(Instagram):
     def _like_posts(self) -> int:
         """ Likes a user's three latest posts. """
         locators = {
-            'posts': (By.XPATH, '//article'),
+            'posts': (By.CLASS_NAME, 'v1Nh3'),
             'like': (By.XPATH, '//button//span//*[name()="svg" and @aria-label="Like"]'),
             'exit': (By.XPATH, '//button//div//*[name()="svg" and @aria-label="Close"]')
         }
@@ -78,7 +82,7 @@ class InstagramSpammer(Instagram):
         try:
             self._wait.until(EC.presence_of_element_located(locators['posts']))
         except TimeoutException:
-            raise ie.LoadingError('Couldn\'t load posts.')
+            raise ie.LoadingError()
 
         posts = self._driver.find_elements(*locators['posts'])
 
@@ -94,15 +98,14 @@ class InstagramSpammer(Instagram):
                 self._wait.until(EC.element_to_be_clickable(locators['like']))
                 self._wait.until(EC.element_to_be_clickable(locators['exit']))
             except TimeoutException:
+                print(f'[-] Couldn\'t load post.')
                 continue
 
-            self._driver.find_element(*locators['like'])
-
-            print(f'[+] Liked a post.')
+            self._driver.find_element(*locators['like']).click()
 
             random_sleep()
 
-            self._driver.find_element(*locators['exit'])
+            self._driver.find_element(*locators['exit']).click()
 
             random_sleep()
 
@@ -117,3 +120,14 @@ class InstagramSpammer(Instagram):
         locators = {
             'message': (By.XPATH, '//button[@type="button"]//div[.="Message"]/..')
         }
+
+        try:
+            self._wait.until(EC.element_to_be_clickable(locators['message']))
+        except TimeoutException:
+            raise ie.LoadingError()
+
+        message_button = self._driver.find_element(*locators['message'])
+
+        self._ac.move_to_element(message_button).click().perform()
+
+        random_sleep()
