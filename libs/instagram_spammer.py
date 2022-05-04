@@ -44,8 +44,8 @@ class InstagramSpammer(Instagram):
                 continue
             else:
                 if liked_posts > 0:
-                    print(f'[+] {liked_posts} of {url} posts have been already liked.')
-                print(f'[+] Liked {posts} posts of {url}.')
+                    print(f'[+] {liked_posts} of {url} posts has(ve) been already liked.')
+                print(f'[+] Liked {posts} post(s) of {url}.')
 
             # self._direct_message()
 
@@ -115,13 +115,13 @@ class InstagramSpammer(Instagram):
             self._ac.move_to_element(post).click().perform()
 
             try:
-                self._wait.until(EC.element_to_be_clickable(locators['like']))
                 self._wait.until(EC.element_to_be_clickable(locators['exit']))
             except TimeoutException:
                 continue
 
             if not self._is_already_liked():
                 self._driver.find_element(*locators['like']).click()
+                liked_posts += 1
                 random_sleep()
             else:
                 already_liked += 1
@@ -129,8 +129,6 @@ class InstagramSpammer(Instagram):
             self._driver.find_element(*locators['exit']).click()
 
             random_sleep()
-
-            liked_posts += 1
 
             if idx == 3: break
 
