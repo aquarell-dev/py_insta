@@ -18,6 +18,10 @@ class Core:
         self.options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36')
         self.options.add_experimental_option("excludeSwitches", ['enable-logging'])
         self.options.add_experimental_option("excludeSwitches", ['enable-automation'])
+        self.options.add_experimental_option('prefs', {
+            "credentials_enable_service": False,
+            "profile.password_manager_enabled": False
+        })
 
     def initialize_driver(self) -> webdriver.Chrome:
         return webdriver.Chrome(executable_path=self._executable_path, options=self.options)
