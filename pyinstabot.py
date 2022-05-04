@@ -9,6 +9,8 @@ def main():
         target=user_config.TARGET_LINK
     )
 
+    print('[+] Logging in...')
+
     try:
         instagram.login()
     except ConnectionError:
@@ -22,6 +24,8 @@ def main():
         return
 
     print('[+] Connection to Instagram has been established.')
+
+    instagram.perform()
 
 if __name__ == '__main__':
     print('[+] Process started...')

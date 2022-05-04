@@ -61,20 +61,29 @@ class Instagram:
             self._driver.quit()
             raise ie.LoadingError('Couldn\'t load the page.')
 
-        if self._does_element_exist((By.XPATH, '//div[@role="dialog"]')):
-            self._driver.find_element(By.XPATH, '//button[@tabindex=0]').click()
-            time.sleep(5)
+        self._accept_cookies()
 
         # instagram protects itself for real incredibly so i added these random time sleeps
         self._driver.find_element(*locators['login']).send_keys(self._login)
-        time.sleep(1.2)
+
+        random_sleep()
+
         self._driver.find_element(*locators['pass']).send_keys(self._password)
-        time.sleep(2)
+
+        random_sleep()
+
         self._driver.find_element(*locators['submit']).click()
 
         if not self._does_element_exist((By.XPATH, '//div[@class="olLwo"]')):
             self._driver.quit()
             raise ie.AuthorizationError(f'Couldn\'t log in. {self._login}')
+
+        self._accept_cookies()
+
+    def _accept_cookies(self) -> None:
+        if self._does_element_exist((By.XPATH, '//div[@role="dialog"]')):
+            self._driver.find_element(By.XPATH, '//button[@tabindex=0]').click()
+            time.sleep(5)
 
     def _does_element_exist(self, locator) -> bool:
         """ Returns True if element exists or else False. """
