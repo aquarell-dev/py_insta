@@ -1,6 +1,7 @@
 from typing import Tuple
 
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -47,7 +48,12 @@ class InstagramSpammer(Instagram):
                     print(f'[+] {liked_posts} of {url} posts has(ve) been already liked.')
                 print(f'[+] Liked {posts} post(s) of {url}.')
 
-            # self._direct_message()
+            try:
+                self._direct_message()
+            except ie.LoadingError:
+                print(f'[-] Not able to locate the message button. Mb you ain\'t allowed to message them.')
+            else:
+                print(f'[+] Message to {url} has been sent.')
 
     def _subscribe(self) -> None:
         """ Subscribes to a user. """
@@ -147,7 +153,8 @@ class InstagramSpammer(Instagram):
     def _direct_message(self, message: str = user_config.MESSAGE) -> None:
         """ Messages a user. """
         locators = {
-            'message': (By.XPATH, '//button[@type="button"]//div[.="Message"]/..')
+            'message': (By.XPATH, '//button[@type="button"]//div[.="Message"]/..'),
+            'textarea': (By.TAG_NAME, 'textarea')
         }
 
         try:
@@ -160,3 +167,14 @@ class InstagramSpammer(Instagram):
         self._ac.move_to_element(message_button).click().perform()
 
         random_sleep()
+
+        try:
+            self._wait.until(EC.presence_of_element_located(locators['textarea']))
+        except TimeoutException:
+            return
+
+        message_input = self._driver.find_element(*locators['textarea'])
+
+        message_input.send_keys(message)
+
+        message_input.send_keys(Keys.RETURN)
