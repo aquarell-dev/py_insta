@@ -10,7 +10,12 @@ from libs.json_ import read_file
 from libs.core import Core, Docker, Proxy
 from config import dev_config, user_config
 import time, os
+import random
 
+def random_sleep() -> None:
+    n = random.randint(4, 8)
+    print(f'[+] Sleeping for {n} seconds...')
+    time.sleep(n)
 
 class Instagram:
     def __init__(self, login: str, password: str, target: str) -> None:

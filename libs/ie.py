@@ -6,3 +6,7 @@ class AuthorizationError(RuntimeError):
 
 class AccountPrivate(RuntimeError):
     pass
+
+
+class NoPostsError(RuntimeError):
+    pass

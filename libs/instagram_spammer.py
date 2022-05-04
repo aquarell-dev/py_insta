@@ -1,5 +1,9 @@
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+
 from config import user_config
-from libs.instagram import Instagram
+from libs.instagram import Instagram, random_sleep
 from libs import ie
 
 class InstagramSpammer(Instagram):
@@ -16,21 +20,100 @@ class InstagramSpammer(Instagram):
                 print(f'[-]. Couldn\'t load the user\'s page. User: {url}.')
                 continue
 
-            self._subscribe()
+            try:
+                self._subscribe()
+            except ie.AccountPrivate:
+                print(f'[-] Account is private. User: {url}.')
+                continue
+            except ie.LoadingError:
+                print(f'[-] Not able to load the subscribe button. User: {url}.')
+                continue
 
-            self._like_posts()
+            try:
+                posts = self._like_posts()
+            except ie.LoadingError:
+                print(f'[-] Not able to load the posts. User: {url}.')
+                continue
 
             self._direct_message()
 
+            print(f'User: {url}. Subscribed. Posts liked: {posts}. Messaged.')
+
     def _subscribe(self) -> None:
         """ Subscribes to a user. """
+        locators = {
+            'follow': (By.XPATH, '//button//div[.="Follow"]/..'),
+        }
+
+        if self._is_acc_private():
+            raise ie.AccountPrivate('Account is private.')
+
+        try:
+            self._wait.until(EC.presence_of_element_located(locators['follow']))
+        except TimeoutException:
+            raise ie.LoadingError('Couldn\'t load elements on the page.')
+
+        random_sleep()
+
+        self._driver.find_element(*locators['follow'])
+
+        random_sleep()
 
     def _is_acc_private(self) -> bool:
-        pass
+        try:
+            self._wait.until(EC.presence_of_element_located((By.XPATH, '//h2[@class="rkEop" and .="This Account is Private"]')))
+        except TimeoutException:
+            return False
 
-    def _like_posts(self) -> None:
+        return True
+
+    def _like_posts(self) -> int:
         """ Likes a user's three latest posts. """
+        locators = {
+            'posts': (By.XPATH, '//article'),
+            'like': (By.XPATH, '//button//span//*[name()="svg" and @aria-label="Like"]'),
+            'exit': (By.XPATH, '//button//div//*[name()="svg" and @aria-label="Close"]')
+        }
+
+        try:
+            self._wait.until(EC.presence_of_element_located(locators['posts']))
+        except TimeoutException:
+            raise ie.LoadingError('Couldn\'t load posts.')
+
+        posts = self._driver.find_elements(*locators['posts'])
+
+        liked_posts = 0
+
+        if not posts:
+            return liked_posts
+
+        for idx, post in enumerate(posts):
+            self._ac.move_to_element(post).click().perform()
+
+            try:
+                self._wait.until(EC.element_to_be_clickable(locators['like']))
+                self._wait.until(EC.element_to_be_clickable(locators['exit']))
+            except TimeoutException:
+                continue
+
+            self._driver.find_element(*locators['like'])
+
+            print(f'[+] Liked a post.')
+
+            random_sleep()
+
+            self._driver.find_element(*locators['exit'])
+
+            random_sleep()
+
+            liked_posts += 1
+
+            if idx == 3: break
+
+        return liked_posts
 
     def _direct_message(self, message: str = user_config.MESSAGE) -> None:
         """ Messages a user. """
-        pass
+        locators = {
+            'message': (By.XPATH, '//button[@type="button"]//div[.="Message"]/..')
+        }
