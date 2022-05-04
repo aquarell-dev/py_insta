@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -16,6 +18,8 @@ class InstagramSpammer(Instagram):
         for idx, user in self._users.items():
             url = user['link']
 
+            print(f'[+] User: {url}({idx} out of {len(self._users)}).')
+
             if not self._safe_get(url):
                 print(f'[-]. Couldn\'t load the user\'s page. User: {url}.')
                 continue
@@ -28,20 +32,22 @@ class InstagramSpammer(Instagram):
             except ie.LoadingError:
                 print(f'[-] Not able to load the subscribe button. User: {url}.')
                 continue
-
-            print(f'[+] Followed to {url}.')
+            except ie.AlreadySubscribed:
+                print(f'[+] Already subscribed to {url}.')
+            else:
+                print(f'[+] Followed to {url}.')
 
             try:
-                posts = self._like_posts()
+                posts, liked_posts = self._like_posts()
             except ie.LoadingError:
                 print(f'[-] Not able to load the posts. User: {url}.')
                 continue
+            else:
+                if liked_posts > 0:
+                    print(f'[+] {liked_posts} of {url} posts have been already liked.')
+                print(f'[+] Liked {posts} posts of {url}.')
 
-            print(f'[+] Liked {url} posts.')
-
-            self._direct_message()
-
-            print(f'[+] User: {url}. Subscribed. Posts liked: {posts}. Messaged.')
+            # self._direct_message()
 
     def _subscribe(self) -> None:
         """ Subscribes to a user. """
@@ -51,6 +57,9 @@ class InstagramSpammer(Instagram):
 
         if self._is_acc_private():
             raise ie.AccountPrivate()
+
+        if self._is_already_subscribed():
+            raise ie.AlreadySubscribed()
 
         try:
             self._wait.until(EC.presence_of_element_located(locators['follow']))
@@ -71,7 +80,17 @@ class InstagramSpammer(Instagram):
 
         return True
 
-    def _like_posts(self) -> int:
+    def _is_already_subscribed(self) -> bool:
+        try:
+            self._wait.until(EC.presence_of_element_located(
+                (By.XPATH, '//button//div//div//*[name()="svg" and @aria-label="Following"]')
+            ))
+        except TimeoutException:
+            return False
+
+        return True
+
+    def _like_posts(self) -> Tuple[int, int]:
         """ Likes a user's three latest posts. """
         locators = {
             'posts': (By.CLASS_NAME, 'v1Nh3'),
@@ -87,9 +106,10 @@ class InstagramSpammer(Instagram):
         posts = self._driver.find_elements(*locators['posts'])
 
         liked_posts = 0
+        already_liked = 0
 
         if not posts:
-            return liked_posts
+            return liked_posts, 0
 
         for idx, post in enumerate(posts):
             self._ac.move_to_element(post).click().perform()
@@ -98,12 +118,13 @@ class InstagramSpammer(Instagram):
                 self._wait.until(EC.element_to_be_clickable(locators['like']))
                 self._wait.until(EC.element_to_be_clickable(locators['exit']))
             except TimeoutException:
-                print(f'[-] Couldn\'t load post.')
                 continue
 
-            self._driver.find_element(*locators['like']).click()
-
-            random_sleep()
+            if not self._is_already_liked():
+                self._driver.find_element(*locators['like']).click()
+                random_sleep()
+            else:
+                already_liked += 1
 
             self._driver.find_element(*locators['exit']).click()
 
@@ -113,7 +134,17 @@ class InstagramSpammer(Instagram):
 
             if idx == 3: break
 
-        return liked_posts
+        return liked_posts, already_liked
+
+    def _is_already_liked(self) -> bool:
+        try:
+            self._wait.until(EC.presence_of_element_located(
+                (By.XPATH, '//button//div//span//*[name()="svg" and @aria-label="Unlike"]')
+            ))
+        except TimeoutException:
+            return False
+
+        return True
 
     def _direct_message(self, message: str = user_config.MESSAGE) -> None:
         """ Messages a user. """

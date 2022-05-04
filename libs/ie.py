@@ -7,6 +7,8 @@ class AuthorizationError(RuntimeError):
 class AccountPrivate(RuntimeError):
     pass
 
-
 class NoPostsError(RuntimeError):
+    pass
+
+class AlreadySubscribed(RuntimeError):
     pass
