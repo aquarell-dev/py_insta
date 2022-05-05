@@ -1,5 +1,5 @@
 # rival's link
-TARGET_LINK = None
+TARGET_LINK = 'https://www.instagram.com/rachabovmasud/'
 
 # instagram credentials
 LOGIN = 'abdulrassman@outlook.com'
