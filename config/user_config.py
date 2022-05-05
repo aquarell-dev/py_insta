@@ -15,4 +15,4 @@ and not FOLLOWERS_FILE = 'followers/followers-test.json'.
 FOLLOWERS_FILE = 'followers-test.json'
 
 # message that's gonna be sent to the users
-MESSAGE = 'hello'
+MESSAGE = 'sup, mate'
