@@ -1,21 +1,34 @@
 from typing import Tuple
+import os
 
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
-from config import user_config
+from config import user_config, dev_config
 from libs.instagram import Instagram, random_sleep
 from libs import ie
+from libs.json_ import read_file, validate_json, write_file
+
 
 class InstagramSpammer(Instagram):
+    def __init__(self, login: str, password: str, target: str) -> None:
+        super().__init__(login, password, target)
+        self._users_path = os.path.join(dev_config.FOLLOWERS_FOLDER, user_config.FOLLOWERS_FILE)
+        self._users = validate_json(
+            read_file(self._users_path),
+            user_config.USERS_COUNT
+        )
+
     def perform(self) -> None:
         """
         Loops through the users, subscribes to them, likes their posts,
         and messages them.
         :return:
         """
+        new_users = {}
+
         for idx, user in self._users.items():
             url = user['link']
 
@@ -54,6 +67,10 @@ class InstagramSpammer(Instagram):
                 print(f'[-] Not able to locate the message button. Mb you ain\'t allowed to message them.')
             else:
                 print(f'[+] Message to {url} has been sent.')
+
+            new_users.update({})
+
+        self._update_followers(new_users)
 
     def _subscribe(self) -> None:
         """ Subscribes to a user. """
@@ -136,7 +153,7 @@ class InstagramSpammer(Instagram):
 
             random_sleep()
 
-            if idx == 3: break
+            if idx == 2: break
 
         return liked_posts, already_liked
 
@@ -178,3 +195,13 @@ class InstagramSpammer(Instagram):
         message_input.send_keys(message)
 
         message_input.send_keys(Keys.RETURN)
+
+    def _update_followers(self, users: dict) -> bool:
+        """ Takes the new followers and updates the .json file. """
+        old_users = read_file(self._users_path)
+
+        old_users.update(users)
+
+        write_file(old_users, self._users_path)
+
+        return True
