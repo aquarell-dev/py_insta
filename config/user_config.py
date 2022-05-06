@@ -1,9 +1,15 @@
-# rival's link
-TARGET_LINK = 'https://www.instagram.com/rachabovmasud/'
-
 # instagram credentials
 LOGIN = 'abdulrassman@outlook.com'
 PASSWORD = 'Qewrty123'
+
+
+""" BOT SETTING """
+
+# how many users to message, like posts, and sub
+USERS_COUNT = 50
+
+# message that's gonna be sent to the users
+MESSAGE = 'sup, mate'
 
 # followers file
 """
@@ -14,5 +20,8 @@ and not FOLLOWERS_FILE = 'followers/followers-test.json'.
 """
 FOLLOWERS_FILE = 'followers-test.json'
 
-# message that's gonna be sent to the users
-MESSAGE = 'sup, mate'
+
+""" PARSER SETTINGS """
+
+# rival's link
+TARGET_LINK = 'https://www.instagram.com/rosaliekroon/'
