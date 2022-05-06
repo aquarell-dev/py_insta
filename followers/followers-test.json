@@ -1,14 +1,18 @@
 {
-  "1": {
-    "link": "https://www.instagram.com/rachabovmasud/",
-    "isFinished": false
-  },
-  "2": {
-    "link": "https://www.instagram.com/shoruzchon1/",
-    "isFinished": false
-  },
-  "3": {
-    "link": "https://her",
-    "isFinished": true
-  }
+    "rachabovmasud": {
+        "link": "https://www.instagram.com/rachabovmasud/",
+        "done": false
+    },
+    "shoruzchon1": {
+        "link": "https://www.instagram.com/shoruzchon1/",
+        "done": false
+    },
+    "her": {
+        "link": "https://www.instagram.com/her/",
+        "done": true
+    },
+    "rajabov_____m": {
+        "link": "https://www.instagram.com/rajabov_____m/",
+        "done": false
+    }
 }
