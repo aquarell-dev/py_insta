@@ -29,6 +29,10 @@ class InstagramSpammer(Instagram):
         """
         new_users = {}
 
+        if not self._users:
+            print(f'[-] No users to use found.')
+            return
+
         for idx, user in self._users.items():
             url = user['link']
 
@@ -68,9 +72,16 @@ class InstagramSpammer(Instagram):
             else:
                 print(f'[+] Message to {url} has been sent.')
 
-            new_users.update({})
+            username = url.split('/')[-2]
+
+            new_users[username] = {
+                "link": url,
+                "done": True
+            }
 
         self._update_followers(new_users)
+
+        print(f'[+] Updated followers file. Path: {self._users_path}.')
 
     def _subscribe(self) -> None:
         """ Subscribes to a user. """
