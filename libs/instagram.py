@@ -36,8 +36,6 @@ class Instagram:
         self._wait = WebDriverWait(self._driver, 10)
         self._ac = ActionChains(self._driver)
 
-        self._users = read_file(os.path.join(dev_config.FOLLOWERS_FOLDER, user_config.FOLLOWERS_FILE))
-
     def __repr__(self) -> str:
         return repr(f'Account. Login - {self._login}.')
 
