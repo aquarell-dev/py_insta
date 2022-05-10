@@ -26,7 +26,7 @@ FOLLOWERS_FILE = 'followers-test.json'
 """ PARSER SETTINGS """
 
 # rival's link
-TARGET_LINK = 'https://www.instagram.com/rosaliekroon/'
+TARGET_LINK = 'https://www.instagram.com/moly_rnd/'
 
 # how many followers to parse
 FOLLOWERS_COUNT = 2500

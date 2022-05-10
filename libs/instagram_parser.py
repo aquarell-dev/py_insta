@@ -1,5 +1,5 @@
 import math
-from typing import Optional, List
+from typing import Optional, List, Tuple
 import httpx
 import json
 import os
@@ -101,6 +101,16 @@ class InstagramParser(Instagram):
             )
         )
 
+    def _get_first_max_id(self, target_id) -> str:
+        """ Sometimes instagram """
+        return httpx.get(
+            f'https://i.instagram.com/api/v1/friendships/{target_id}/followers/?count=1',
+            headers={
+                'user-agent': 'Instagram 219.0.0.12.117 Android'
+            },
+            cookies=self._cookies
+        ).json()['next_max_id']
+
     def _parse_followers(self, target_id: int, followers_count: int) -> dict:
         global_followers = {}
 
@@ -110,12 +120,16 @@ class InstagramParser(Instagram):
 
         total_requests = math.floor(followers_count / step)
 
+        max_id = self._get_first_max_id(target_id)
+
         for i in range(step, followers_count, step):
             try:
-                followers = self._get_followers(target_id, i, step)
+                followers, next_max_id = self._get_followers(target_id, max_id, step)
             except self._httpxErrors:
                 print(f'[-] Couldn\'t get next {step} followers.')
                 continue
+
+            max_id = next_max_id
 
             requests_count += 1
 
@@ -144,7 +158,7 @@ class InstagramParser(Instagram):
             .replace('k', '000') \
             .replace('m', '000000')
 
-    def _get_followers(self, target_id: int, max_id: int, step: int) -> List[dict]:
+    def _get_followers(self, target_id: int, max_id: str, step: int) -> Tuple[List[dict], str]:
         """
         NOTE. I could've used async, but time is almost up, so
         :param target_id:
@@ -152,10 +166,12 @@ class InstagramParser(Instagram):
         :param step:
         :return:
         """
-        return httpx.get(
+        response = httpx.get(
             f'https://i.instagram.com/api/v1/friendships/{target_id}/followers/?count={step}&max_id={max_id}&search_surface=follow_list_page',
             headers={
                 'user-agent': 'Instagram 219.0.0.12.117 Android'
             },
             cookies=self._cookies
-        ).json()['users']
+        ).json()
+
+        return response['users'], response['next_max_id']
