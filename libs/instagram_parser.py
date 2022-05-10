@@ -83,24 +83,6 @@ class InstagramParser(Instagram):
         except (KeyError, ValueError):
             return None
 
-    def _get_followers_count(self) -> int:
-        """ In order to get followers count you have to be on the user's page. """
-
-        locators = {
-            'followers': (By.XPATH, f'//a[@href="/{self._username}/followers/"]//div//span')
-        }
-
-        try:
-            self._wait.until(EC.presence_of_element_located(locators['followers']))
-        except TimeoutException:
-            raise ie.LoadingError()
-
-        return int(
-            self._evaluate(
-                self._driver.find_element(*locators['followers']).get_attribute('innerHTML')
-            )
-        )
-
     def _get_first_max_id(self, target_id) -> str:
         """ Sometimes instagram """
         return httpx.get(
@@ -150,13 +132,6 @@ class InstagramParser(Instagram):
             )
 
         return global_followers
-
-    def _evaluate(self, followers_count: str) -> str:
-        """ It's just instagram has no int followers count in the source code. """
-        return followers_count \
-            .replace(',', '') \
-            .replace('k', '000') \
-            .replace('m', '000000')
 
     def _get_followers(self, target_id: int, max_id: str, step: int) -> Tuple[List[dict], str]:
         """
