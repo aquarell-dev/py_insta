@@ -8,6 +8,8 @@ PASSWORD = 'Qewrty123'
 # how many users to message, like posts, and sub
 USERS_COUNT = 50
 
+POSTS_COUNT = 3
+
 # message that's gonna be sent to the users
 MESSAGE = 'sup, mate'
 
@@ -25,3 +27,6 @@ FOLLOWERS_FILE = 'followers-test.json'
 
 # rival's link
 TARGET_LINK = 'https://www.instagram.com/rosaliekroon/'
+
+# how many followers to parse
+FOLLOWERS_COUNT = 2500

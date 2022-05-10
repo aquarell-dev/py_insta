@@ -164,7 +164,7 @@ class InstagramSpammer(Instagram):
 
             random_sleep()
 
-            if idx == 2: break
+            if idx == user_config.POSTS_COUNT - 1: break
 
         return liked_posts, already_liked
 

@@ -39,7 +39,7 @@ class InstagramParser(Instagram):
         print(f'[+] Target id: {target_id}.')
 
         try:
-            followers_count = self._get_followers_count()
+            followers_count = user_config.FOLLOWERS_COUNT
         except ie.LoadingError:
             print('[-] Couldn\'t get followers count.')
             return
